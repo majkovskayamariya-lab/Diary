@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Дневник Симптомов и Еды</title>
+    <style>
+        :root {
+            --bg-color: #0f0f12;
+            --card-bg: #1c1c1e;
+            --accent-color: #ff375f;
+            --accent-secondary: #30d158;
+            --text-color: #ffffff;
+            --text-secondary: #8e8e93;
+            --border-color: #2c2c2e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 16px 30px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        input[type="text"], input[type="number"], input[type="time"], textarea {
+            width: 100%;
+            background-color: #2c2c2e;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: 2px solid var(--accent-color);
+        }
+
+        .symptoms-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .symptom-btn {
+            background-color: #2c2c2e;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 8px;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.1s;
+        }
+
+        .symptom-btn.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .btn-add {
+            width: 100%;
+            background-color: #2c2c2e;
+            color: #ff453a;
+            border: 1px dashed #ff453a;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-add:active {
+            background-color: #3a3a3c;
+        }
+
+        .btn-main {
+            width: 100%;
+            background-color: var(--accent-secondary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(48, 209, 88, 0.2);
+        }
+        
+        .btn-main:active {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 25px;
+        }
+
+        .added-list {
+            margin-top: 10px;
+        }
+
+        .added-item {
+            background: #2c2c2e;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .added-item .time {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .added-item .type-badge {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+
+        .badge-food { background-color: #34c759; color: white; }
+        .badge-symptom { background-color: #ff9500; color: white; }
+
+        .added-item .delete-btn {
+            color: #ff453a;
+            font-weight: bold;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        .history-count {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Дневник цикла и здоровья</h1>
+    <div class="subtitle">Добавляйте события за день, а вечером сохраняйте в историю.</div>
+
+    <!-- Шапка дня -->
+    <div class="card">
+        <label>День цикла (общий на сегодня)</label>
+        <input type="number" id="cycle-day" placeholder="Например: 3">
+    </div>
+
+    <!-- Конструктор событий -->
+    <div class="card">
+        <label style="color: #ff9500;">Новое событие (выберите время)</label>
+        <input type="time" id="event-time">
+        
+        <div style="margin-top: 15px;">
+            <label>Вариант А: Что вы съели?</label>
+            <textarea id="food-input" rows="2" placeholder="Опишите еду или напиток..."></textarea>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <label>Вариант Б: Какие симптомы появились?</label>
+            <div class="symptoms-grid">
+                <div class="symptom-btn" onclick="toggleSymptom(this)">Запор</div>
+                <div class="symptom-btn" onclick="toggleSymptom(this)">Вздутие</div>
+                <div class="symptom-btn" onclick="toggleSymptom(this)">Тяжесть</div>
+                <div class="symptom-btn" onclick="toggleSymptom(this)">Отрыжка</div>
+                <div class="symptom-btn" onclick="toggleSymptom(this)">Газы</div>
+                <div class="symptom-btn" onclick="toggleSymptom(this)">Мутная голова</div>
+                <div class="symptom-btn" onclick="toggleSymptom(this)">Слабость</div>
+            </div>
+        </div>
+
+        <button class="btn-add" onclick="addEventToList()">
+            <span>➕ Добавить в текущий день</span>
+        </button>
+    </div>
+
+    <!-- Список добавленного за сегодня -->
+    <div class="card" id="today-block" style="display: none;">
+        <label>События за сегодня (будут сохранены):</label>
+        <div class="added-list" id="added-events-container"></div>
+    </div>
+
+    <!-- Комментарий к дню -->
+    <div class="card">
+        <label>Итоговый комментарий за день (необязательно)</label>
+        <textarea id="day-comment" rows="2" placeholder="Общее самочувствие, стресс, сон..."></textarea>
+    </div>
+
+    <!-- Кнопка сохранения всего дня -->
+    <button class="btn-main" onclick="saveFullDay()">💾 Сохранить весь день в историю</button>
+    
+    <div class="history-count" id="history-counter">Дней в истории: 0</div>
+    
+    <button class="btn-secondary" onclick="exportToCSV()">📊 Выгрузить данные для нейросети (.CSV)</button>
+    <button class="btn-secondary" style="margin-top: 10px; color: #ff453a; border-color: rgba(255,69,58,0.2);" onclick="clearAllHistory()">🗑 Очистить всю историю</button>
+</div>
+
+<script>
+    // Массив для сбора событий внутри текущего дня
+    let currentDayEvents = [];
+
+    // Установка текущего времени по умолчанию
+    function setTimeNow() {
+        const now = new Date();
+        document.getElementById('event-time').value = now.toTimeString().substring(0, 5);
+    }
+    setTimeNow();
+
+    // Загрузка сохраненного цикла для удобства
+    if(localStorage.getItem('lastCycleDay')) {
+        document.getElementById('cycle-day').value = localStorage.getItem('lastCycleDay');
+    }
+
+    function toggleSymptom(element) {
+        element.classList.toggle('active');
+    }
+
+    // Добавление еды или симптома во временный список текущего дня
+    function addEventToList() {
+        const time = document.getElementById('event-time').value;
+        const food = document.getElementById('food-input').value.trim();
+        
+        const activeSymptoms = [];
+        document.querySelectorAll('.symptom-btn.active').forEach(btn => {
+            activeSymptoms.push(btn.innerText);
+        });
+
+        if (!food && activeSymptoms.length === 0) {
+            alert('Сначала напишите еду ИЛИ выберите симптомы!');
+            return;
+        }
+
+        if (food) {
+            currentDayEvents.push({
+                time: time,
+                type: 'Еда',
+                content: food
+            });
+        }
+
+        if (activeSymptoms.length > 0) {
+            currentDayEvents.push({
+                time: time,
+                type: 'Симптомы',
+                content: activeSymptoms.join(', ')
+            });
+        }
+
+        // Очищаем форму ввода события
+        document.getElementById('food-input').value = '';
+        document.querySelectorAll('.symptom-btn').forEach(btn => btn.classList.remove('active'));
+        setTimeNow(); // обновляем время на текущее для следующей записи
+        
+        renderCurrentEvents();
+    }
+
+    // Отображение добавленных за сегодня пунктов
+    function renderCurrentEvents() {
+        const container = document.getElementById('added-events-container');
+        const block = document.getElementById('today-block');
+        
+        container.innerHTML = '';
+        
+        if (currentDayEvents.length === 0) {
+            block.style.display = 'none';
+            return;
+        }
+        
+        block.style.display = 'block';
+        
+        // Сортировка по времени внутри дня
+        currentDayEvents.sort((a,b) => a.time.localeCompare(b.time));
+
+        currentDayEvents.forEach((ev, index) => {
+            const item = document.createElement('div');
+            item.className = 'added-item';
+            
+            const badgeClass = ev.type === 'Еда' ? 'badge-food' : 'badge-symptom';
+            
+            item.innerHTML = `
+                <div>
+                    <span class="time">${ev.time}</span>
+                    <span class="type-badge ${badgeClass}">${ev.type}</span>
+                    <span>${ev.content}</span>
+                </div>
+                <span class="delete-btn" onclick="deleteEvent(${index})">✕</span>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function deleteEvent(index) {
+        currentDayEvents.splice(index, 1);
+        renderCurrentEvents();
+    }
+
+    function updateCounter() {
+        const history = JSON.parse(localStorage.getItem('healthHistory') || '[]');
+        document.getElementById('history-counter').innerText = `Дней в истории: ${history.length}`;
+    }
+    updateCounter();
+
+    // Сохранение всего дня в глобальную историю (LocalStorage)
+    function saveFullDay() {
+        const cycleDay = document.getElementById('cycle-day').value.trim();
+        const comment = document.getElementById('day-comment').value.trim();
+        const dateStr = new Date().toLocaleDateString('ru-RU');
+
+        if (currentDayEvents.length === 0) {
+            alert('Вы не добавили ни одного события (приема пищи или симптома) за сегодня!');
+            return;
+        }
+
+        const dayRecord = {
+            date: dateStr,
+            cycleDay: cycleDay || "Не указан",
+            comment: comment || "—",
+            events: currentDayEvents
+        };
+
+        const history = JSON.parse(localStorage.getItem('healthHistory') || '[]');
+        history.push(dayRecord);
+        localStorage.setItem('healthHistory', JSON.stringify(history));
+
+        if (cycleDay) {
+            // Запоминаем день цикла, чтобы завтра автоматически предложить следующий день (+1)
+            localStorage.setItem('lastCycleDay', parseInt(cycleDay) + 1);
+            document.getElementById('cycle-day').value = parseInt(cycleDay) + 1;
+        }
+
+        // Полная очистка интерфейса дня
+        currentDayEvents = [];
+        document.getElementById('day-comment').value = '';
+        renderCurrentEvents();
+        updateCounter();
+        
+        alert('Весь день успешно сохранен в историю!');
+    }
+
+    // Экспорт в CSV (нейросеть разберется идеально)
+    function exportToCSV() {
+        const history = JSON.parse(localStorage.getItem('healthHistory') || '[]');
+        if (history.length === 0) {
+            alert('История пуста. Добавьте и сохраните хотя бы один день!');
+            return;
+        }
+
+        let csvContent = "﻿"; // BOM для Excel/ИИ (чтобы не ломался русский язык)
+        csvContent += "Дата;День цикла;Время события;Тип события;Описание/Симптомы;Комментарий к дню
+";
+
+        history.forEach(day => {
+            day.events.forEach(ev => {
+                csvContent += `"${day.date}";"${day.cycleDay}";"${ev.time}";"${ev.type}";"${ev.content.replace(/"/g, '""')}";"${day.comment.replace(/"/g, '""')}"
+`;
+            });
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `diary_export_${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function clearAllHistory() {
+        if(confirm('Вы уверены, что хотите полностью очистить всю историю записей? Это действие нельзя отменить.')) {
+            localStorage.removeItem('healthHistory');
+            localStorage.removeItem('lastCycleDay');
+            document.getElementById('cycle-day').value = '';
+            currentDayEvents = [];
+            renderCurrentEvents();
+            updateCounter();
+            alert('Вся история очищена.');
+        }
+    }
+</script>
+
+</body>
+</html>
